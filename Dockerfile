@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.20
 # Adapted from: https://github.com/frol/docker-alpine-python3/blob/master/Dockerfile
 RUN apk add --no-cache poppler-utils python3 bash && \
     python3 -m ensurepip && \
