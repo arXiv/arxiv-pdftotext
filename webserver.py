@@ -57,4 +57,3 @@ if __name__ == "__main__":
     port = 8888
     ip = socket.gethostbyname(socket.gethostname())
     print("start listening:", ip, host + ":" + str(port), file=sys.stderr)
-    app.run(host=host, port=port)
