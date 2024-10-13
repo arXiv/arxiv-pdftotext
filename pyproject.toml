@@ -18,5 +18,29 @@ dev-dependencies = [
 [tool.ruff]
 line-length = 120
 
+lint.select = [
+    "F", # Pyflakes
+    "D", # pydocstyle
+    "E", # pycodestyle errors
+    # "W", # pycodestyle warnings
+    # "C90", # McCabe
+    "I",   # isort
+    "UP",  # pyupgrade
+    "PLC",
+    "PLE",
+    "PLW", # Pylint
+    # "PLR", # Pylint refactoring
+    "PD",  # pandas checks
+    "NPY", # numpy checks
+    "RUF", # ruff internal check
+]
+lint.ignore = [
+    "D105", # no docstring in magic method like __str__
+    "D107", # no docstring in __init__
+    "D211", # no-blank-line-before-class
+    "D213", # multi-line-summary-second-line
+]
+
+
 [tool.ruff.format]
 quote-style = "double"
