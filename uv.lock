@@ -2,6 +2,31 @@ version = 1
 requires-python = ">=3.12"
 
 [[package]]
+name = "arxiv-pdftotext"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "flask" },
+    { name = "gunicorn" },
+    { name = "pdfminer-six" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "flask", specifier = "==3.*" },
+    { name = "gunicorn" },
+    { name = "pdfminer-six" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "ruff" }]
+
+[[package]]
 name = "blinker"
 version = "1.8.2"
 source = { registry = "https://pypi.org/simple" }
@@ -240,31 +265,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/e3/37/63cb918ffa21412dd
 wheels = [
     { url = "https://files.pythonhosted.org/packages/67/7d/44d6b90e5a293d3a975cefdc4e12a932ebba814995b2a07e37e599dd27c6/pdfminer.six-20240706-py3-none-any.whl", hash = "sha256:f4f70e74174b4b3542fcb8406a210b6e2e27cd0f0b5fd04534a8cc0d8951e38c", size = 5615414 },
 ]
-
-[[package]]
-name = "pdftotext-docker-rest"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "flask" },
-    { name = "gunicorn" },
-    { name = "pdfminer-six" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "flask", specifier = "==3.*" },
-    { name = "gunicorn" },
-    { name = "pdfminer-six" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "ruff" }]
 
 [[package]]
 name = "pycparser"
