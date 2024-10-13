@@ -1,0 +1,22 @@
+[project]
+name = "pdftotext-docker-rest"
+version = "0.1.0"
+description = "pdftotext. As a webservice, containerized!"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask==3.*",
+    "gunicorn",
+    "pdfminer-six",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "double"
