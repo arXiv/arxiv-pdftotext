@@ -1,7 +1,7 @@
 [project]
-name = "pdftotext-docker-rest"
+name = "arxiv-pdftotext"
 version = "0.1.0"
-description = "pdftotext. As a webservice, containerized!"
+description = "pdftotext and pdf2txt. As a webservice, containerized!"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
