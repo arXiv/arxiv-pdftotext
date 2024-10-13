@@ -14,14 +14,14 @@ RUN adduser -S appuser
 # Add poppler utils for pdftotext
 RUN apk add --no-cache poppler-utils
 
+# Copy the script and uv config
+COPY webserver.py /app/webserver.py
+COPY uv.lock /app/uv.lock
+COPY pyproject.toml /app/pyproject.toml
+
 # Install the project's dependencies using the lockfile and settings
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --no-dev
-
-# Copy the script
-COPY webserver.py /app/webserver.py
+    uv sync --frozen --no-install-project --no-dev \
 
 # Switch to non-root user
 USER appuser
