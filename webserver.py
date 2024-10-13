@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+"""Webserver-version of pdftotext (poppler utils) and pdf2txt (pdfminer.six)."""
+
 import os
 import socket
 import sys
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 from tempfile import TemporaryDirectory
 
 from flask import Flask, request, send_file
@@ -12,6 +14,7 @@ app = Flask(__name__)
 
 @app.route("/", methods=["POST"])
 def handle_file():
+    """Entry point for API call to convert pdf to text."""
     with TemporaryDirectory() as temp_dir:
         if "file" in request.files:
             if len(request.files) != 1:
