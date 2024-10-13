@@ -3,6 +3,7 @@
 
 import logging
 import os
+import shutil
 import socket
 import sys
 from subprocess import PIPE, Popen
@@ -10,7 +11,17 @@ from tempfile import TemporaryDirectory
 
 from flask import Flask, request, send_file
 
+# map mode parameters to programs
+PARAM2PROGRAM_DEFAULTS = {
+    "pdftotext": "pdftotext",
+    "pdf2txt": "pdf2txt.py",
+}
+PARAM2PROGRAM_FOUND = {}
 app = Flask(__name__)
+
+for k, v in PARAM2PROGRAM_DEFAULTS.items():
+    if shutil.which(v) is not None:
+        PARAM2PROGRAM_FOUND[k] = v
 
 
 @app.route("/", methods=["POST"])
@@ -42,12 +53,10 @@ def handle_file():
         mode = request.values.get("mode")
         if mode is None:
             mode = "pdftotext"
-        if mode == "pdf2txt":
-            cmd = ["pdf2txt.py"]
-        elif mode == "pdftotext":
-            cmd = ["/usr/bin/pdftotext"]
-        else:
-            return f"Invalid mode: {mode}", 400
+        if mode not in PARAM2PROGRAM_FOUND.keys():
+            return f"Program for mode {mode} not found", 400
+        cmd = [ PARAM2PROGRAM_FOUND[mode] ]
+
         params = request.values.get("params")
 
         logging.debug("mode=%s file_path_in=%s file_path_out=%s params=%s", mode, file_path_in, file_path_out, params)
@@ -66,7 +75,7 @@ def handle_file():
         if p.returncode == 0:
             return send_file(file_path_out)
         else:
-            return "Failed to execute 'pdftotext' process:\n\n" + err.decode("utf-8"), 500
+            return f"Failed to execute '{mode}' process:\n\n" + err.decode("utf-8"), 500
 
         return send_file(file_path_out)
 
