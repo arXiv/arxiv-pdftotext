@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Webserver-version of pdftotext (poppler utils) and pdf2txt (pdfminer.six)."""
 
+import logging
 import os
 import socket
 import sys
@@ -38,11 +39,26 @@ def handle_file():
             sys.stdout.flush()
 
         file_path_out = file_path_in + ".txt"
-        cmd = ["/usr/bin/pdftotext"]
+        mode = request.values.get("mode")
+        if mode is None:
+            mode = "pdftotext"
+        if mode == "pdf2txt":
+            cmd = ["pdf2txt.py"]
+        elif mode == "pdftotext":
+            cmd = ["/usr/bin/pdftotext"]
+        else:
+            return f"Invalid mode: {mode}", 400
         params = request.values.get("params")
+
+        logging.debug("mode=%s file_path_in=%s file_path_out=%s params=%s", mode, file_path_in, file_path_out, params)
         if params:
             cmd.extend(params.split())
-        cmd.extend([file_path_in, file_path_out])
+        if mode == "pdf2txt":
+            cmd.extend(["--outfile", file_path_out, file_path_in])
+        elif mode == "pdftotext":
+            cmd.extend([file_path_in, file_path_out])
+        else:
+            return f"Invalid mode: {mode}", 400
 
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
