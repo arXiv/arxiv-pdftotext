@@ -10,10 +10,10 @@ from flask import Flask, request, send_file
 app = Flask(__name__)
 
 
-@app.route('/', methods=['POST'])
+@app.route("/", methods=["POST"])
 def handle_file():
     with TemporaryDirectory() as temp_dir:
-        if 'file' in request.files:
+        if "file" in request.files:
             if len(request.files) != 1:
                 return f"You must upload one PDF file for processing (len(request.files)={len(request.files)})", 400
 
@@ -23,20 +23,20 @@ def handle_file():
                 file = files_dict[key]
                 file_path_in = os.path.join(temp_dir, file.filename)
 
-                if not file_path_in.lower().endswith('.pdf'):
+                if not file_path_in.lower().endswith(".pdf"):
                     return f"Only .pdf files are allowed (file_path_in={file_path_in})", 400
 
                 file.save(file_path_in)
         else:  # PDF provided in binary (application/octet-stream), not as a file
             file_path_in = os.path.join(temp_dir, "unnamed.pdf")
             data = request.stream.read()
-            with open(file_path_in, 'wb') as f:
+            with open(file_path_in, "wb") as f:
                 f.write(data)
             sys.stdout.flush()
 
         file_path_out = file_path_in + ".txt"
         cmd = ["/usr/bin/pdftotext"]
-        params = request.values.get('params')
+        params = request.values.get("params")
         if params:
             cmd.extend(params.split())
         cmd.extend([file_path_in, file_path_out])
