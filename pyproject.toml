@@ -5,8 +5,8 @@ description = "pdftotext and pdf2txt. As a webservice, containerized!"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "flask==3.*",
-    "gunicorn",
+    "flask==3.0.*",
+    "gunicorn==23.0.*",
     "pdfminer-six",
 ]
 
