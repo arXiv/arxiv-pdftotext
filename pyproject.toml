@@ -13,6 +13,9 @@ dependencies = [
 [tool.uv]
 dev-dependencies = [
     "ruff",
+    "pytest",
+    "requests",
+    "pre-commit",
 ]
 
 [tool.ruff]
@@ -37,6 +40,7 @@ lint.select = [
 lint.ignore = [
     "D105", # no docstring in magic method like __str__
     "D107", # no docstring in __init__
+    "D203", # one-blank-line-before-class
     "D211", # no-blank-line-before-class
     "D213", # multi-line-summary-second-line
 ]
