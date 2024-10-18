@@ -1,17 +1,30 @@
-[![Build Status](https://travis-ci.com/sdenel/pdftotext-docker-rest.svg?branch=master)](https://travis-ci.com/sdenel/pdftotext-docker-rest)
 
-pdftotext. As a webservice, containerized! The image is based on Alpine. See also image on Docker Hub: [sdenel/pdftotext-docker-rest](https://hub.docker.com/repository/docker/sdenel/pdftotext-docker-rest)
+arxiv-pdftotext. As a webservice, containerized! The image is based on Alpine.
+
+Forked and extended from https://github.com/sdenel/pdftotext-docker-rest
 
 ## Usage
 
+Run the service:
+
 ```bash
-docker run -d -p8888:8888 ghcr.io/sdenel/pdftotext-docker-rest:latest
+docker run -d -p8888:8888 arxiv-pdftotext:latest
 ```
+
+Two modes are supported:
+- pdftotext: uses the poppler utilities tool `pdftotext`
+- pdf2txt: uses the pdfminer.six tool `pdf2txt.py`
+
 Example of usage:
+
+Default mode is `pdftotext`
 ```bash
 wget http://www.xmlpdf.com/manualfiles/hello-world.pdf
 curl -F "file=@hello-world.pdf;" http://localhost:8888/
 ```
 
-# Contributions welcomed!
-* Still to do: allow usage of pdttotext options.
+Passing a different mode:
+```bash
+curl -F "file=@hello-world.pdf;" -F "mode=pdf2txt;" http://localhost:8888/
+```
+
