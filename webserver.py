@@ -9,7 +9,7 @@ import sys
 from subprocess import PIPE, Popen
 from tempfile import TemporaryDirectory
 
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, request, send_file
 
 # map mode parameters to programs
 PARAM2PROGRAM_DEFAULTS = {
@@ -84,15 +84,6 @@ def handle_file():
             return f"Failed to execute '{mode}' process:\n\n" + err.decode("utf-8"), 500
 
         return send_file(file_path_out)
-
-
-@app.route("/version")
-def version():
-    """Return the build version of the current docker image."""
-    build_version = os.getenv("BUILD_VERSION", "unknown")
-
-    return jsonify({"version": build_version})
-
 
 if __name__ == "__main__":
     host = "0.0.0.0"
