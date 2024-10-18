@@ -24,6 +24,12 @@ for k, v in PARAM2PROGRAM_DEFAULTS.items():
         PARAM2PROGRAM_FOUND[k] = v
 
 
+@app.route("/", methods=["GET"])
+def healthcheck() -> str:
+    """Health check endpoint."""
+    return "<h1>All good!</h1>"
+
+
 @app.route("/", methods=["POST"])
 def handle_file():
     """Entry point for API call to convert pdf to text."""
@@ -55,7 +61,7 @@ def handle_file():
             mode = "pdftotext"
         if mode not in PARAM2PROGRAM_FOUND.keys():
             return f"Program for mode {mode} not found", 400
-        cmd = [ PARAM2PROGRAM_FOUND[mode] ]
+        cmd = [PARAM2PROGRAM_FOUND[mode]]
 
         params = request.values.get("params")
 
