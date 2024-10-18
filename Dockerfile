@@ -21,7 +21,7 @@ COPY pyproject.toml /app/pyproject.toml
 
 # Install the project's dependencies using the lockfile and settings
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev \
+    uv sync --frozen --no-install-project --no-dev
 
 # Switch to non-root user
 USER appuser
