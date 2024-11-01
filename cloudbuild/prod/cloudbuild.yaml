@@ -22,6 +22,7 @@ steps:
     - 'arxiv-pdftotext'
     - '--service-account'
     - 'qa-tools-sa@arxiv-production.iam.gserviceaccount.com'
+    - '--min-instances=default'
     - '--image'
     - 'gcr.io/${PROJECT_ID}/${_IMAGE_NAME}:${TAG_NAME}'
     - '--region'
