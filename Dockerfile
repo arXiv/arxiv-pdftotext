@@ -30,4 +30,4 @@ USER appuser
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Run this when a container is started
-CMD ["gunicorn", "--bind", "0.0.0.0:8888", "webserver:app"]
+CMD ["hypercorn", "--bind", "0.0.0.0:8888", "webserver:app"]
