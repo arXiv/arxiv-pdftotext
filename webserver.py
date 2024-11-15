@@ -50,25 +50,24 @@ def handle_file(file: UploadFile = File(...), mode: str = "pdftotext", params: s
     file_path_out = file_path_in + ".txt"
     if mode not in PARAM2PROGRAM_FOUND.keys():
         return f"Program for mode {mode} not found", 400
-    cmd = PARAM2PROGRAM_FOUND[mode]
+    cmd = [PARAM2PROGRAM_FOUND[mode]]
 
     logging.debug("mode=%s file_path_in=%s file_path_out=%s params=%s", mode, file_path_in, file_path_out, params)
-    args = []
     if params:
-        args = params.split()
+        cmd.extend(params.split())
     if mode == "pdf2txt":
-        args.extend(["--outfile", file_path_out, file_path_in])
+        cmd.extend(["--outfile", file_path_out, file_path_in])
     elif mode == "pdftotext":
-        args.extend([file_path_in, file_path_out])
+        cmd.extend([file_path_in, file_path_out])
     else:
         return f"Invalid mode: {mode}", 400
 
-    logging.debug(f"Running {[cmd, *args]}")
-    p = Popen([cmd, *args], stdout=PIPE, stderr=PIPE)
+    logging.debug(f"Running {cmd}")
+    p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     logging.debug("Starting conversion process")
     out, err = p.communicate()
     logging.debug(f"stdout={out}, stderr={err}")
-    print("Conversion process finished")
+    logging.debug("Conversion process finished")
 
     if p.returncode == 0:
         return FileResponse(file_path_out, background=BackgroundTask(shutil.rmtree, temp_dir))
