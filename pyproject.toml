@@ -9,6 +9,7 @@ dependencies = [
     "hypercorn",
     "pdfminer-six",
     "python-multipart",
+    "google-cloud-storage",
 ]
 
 [tool.uv]
