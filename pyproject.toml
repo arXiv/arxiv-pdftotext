@@ -1,0 +1,50 @@
+[project]
+name = "arxiv-pdftotext"
+version = "0.1.0"
+description = "pdftotext and pdf2txt. As a webservice, containerized!"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask==3.0.*",
+    "gunicorn==23.0.*",
+    "pdfminer-six",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "ruff",
+    "pytest",
+    "requests",
+    "pre-commit",
+]
+
+[tool.ruff]
+line-length = 120
+
+lint.select = [
+    "F", # Pyflakes
+    "D", # pydocstyle
+    "E", # pycodestyle errors
+    # "W", # pycodestyle warnings
+    # "C90", # McCabe
+    "I",   # isort
+    "UP",  # pyupgrade
+    "PLC",
+    "PLE",
+    "PLW", # Pylint
+    # "PLR", # Pylint refactoring
+    "PD",  # pandas checks
+    "NPY", # numpy checks
+    "RUF", # ruff internal check
+]
+lint.ignore = [
+    "D105", # no docstring in magic method like __str__
+    "D107", # no docstring in __init__
+    "D203", # one-blank-line-before-class
+    "D211", # no-blank-line-before-class
+    "D213", # multi-line-summary-second-line
+]
+
+
+[tool.ruff.format]
+quote-style = "double"
