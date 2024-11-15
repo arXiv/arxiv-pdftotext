@@ -10,7 +10,7 @@ import tempfile
 from subprocess import PIPE, Popen
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from starlette.background import BackgroundTask
 
 PARAM2PROGRAM_DEFAULTS = {
@@ -26,7 +26,7 @@ for k, v in PARAM2PROGRAM_DEFAULTS.items():
         PARAM2PROGRAM_FOUND[k] = v
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def healthcheck() -> str:
     """Health check endpoint."""
     return "<h1>All good!</h1>"
