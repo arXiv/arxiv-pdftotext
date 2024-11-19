@@ -69,10 +69,13 @@ def healthcheck() -> str:
 def handle_file_from_bucket(uri: str, mode: str = "pdftotext", params: str = ""):
     """Entry point for API call to convert pdf via bucket url to text."""
     temp_dir = tempfile.mkdtemp()
-    client = storage.Client()
-    blob = Blob.from_string(uri, client=client)
-    file_path_in = os.path.join(temp_dir, os.path.basename(blob.name))
-    blob.download_to_filename(file_path_in)
+    try:
+        client = storage.Client()
+        blob = Blob.from_string(uri, client=client)
+        file_path_in = os.path.join(temp_dir, os.path.basename(blob.name))
+        blob.download_to_filename(file_path_in)
+    except Exception as e:
+        return f"Failed to obtain file from bucket: {e}", 500
     return convert_file(temp_dir, file_path_in, mode, params)
 
 
