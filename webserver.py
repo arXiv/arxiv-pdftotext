@@ -9,6 +9,7 @@ import sys
 import tempfile
 from subprocess import PIPE, Popen
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 from google.cloud import storage
@@ -21,11 +22,37 @@ PARAM2PROGRAM_DEFAULTS = {
 }
 PARAM2PROGRAM_FOUND = {}
 
+load_dotenv()
+# list of buckets like
+# ACCEPTED_BUCKETS=foo-bar-baz,another-bucket
+# would accept gs://foo-bar-baz/...
+# if NOT set, *ALL* buckets are allowed!
+ACCEPTED_BUCKETS_STRING = os.getenv("ACCEPTED_BUCKETS")
+if ACCEPTED_BUCKETS_STRING is None:
+    ACCEPTED_BUCKETS = None
+else:
+    ACCEPTED_BUCKETS = [bucket.lower() for bucket in ACCEPTED_BUCKETS_STRING.split(",")]
+
 app = FastAPI()
 
 for k, v in PARAM2PROGRAM_DEFAULTS.items():
     if shutil.which(v) is not None:
         PARAM2PROGRAM_FOUND[k] = v
+
+
+def check_input_file(uri: str) -> tuple[bool, str]:
+    """Check if input file satisfies acceptability conditions."""
+    # check for .pdf extension
+    uri_lower = uri.lower()
+    if not uri_lower.endswith(".pdf"):
+        return False, "Input file is not a PDF file"
+    if uri_lower.startswith("gs://"):
+        if ACCEPTED_BUCKETS is not None:
+            # get bucket from uri
+            bucket_name = uri_lower.split("/")[2]
+            if bucket_name not in ACCEPTED_BUCKETS:
+                return False, "Input bucket not found in ACCEPTED_BUCKETS"
+    return True, ""
 
 
 def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
@@ -68,6 +95,9 @@ def healthcheck() -> str:
 @app.post("/from_bucket")
 def handle_file_from_bucket(uri: str, mode: str = "pdftotext", params: str = ""):
     """Entry point for API call to convert pdf via bucket url to text."""
+    is_ok, msg = check_input_file(uri)
+    if not is_ok:
+        return msg, 400
     temp_dir = tempfile.mkdtemp()
     try:
         client = storage.Client()
@@ -82,10 +112,11 @@ def handle_file_from_bucket(uri: str, mode: str = "pdftotext", params: str = "")
 @app.post("/")
 def handle_file(file: UploadFile = File(...), mode: str = "pdftotext", params: str = ""):
     """Entry point for API call to convert pdf to text."""
+    is_ok, msg = check_input_file(file.filename)
+    if not is_ok:
+        return msg, 400
     temp_dir = tempfile.mkdtemp()
     file_path_in = os.path.join(temp_dir, file.filename)
-    if not file_path_in.lower().endswith(".pdf"):
-        return f"Only .pdf files are allowed (file_path_in={file_path_in})", 400
     try:
         with open(file_path_in, "wb") as f:
             shutil.copyfileobj(file.file, f)

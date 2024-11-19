@@ -8,6 +8,7 @@ dependencies = [
     "fastapi",
     "hypercorn",
     "pdfminer-six",
+    "python-dotenv",
     "python-multipart",
     "google-cloud-storage",
 ]
