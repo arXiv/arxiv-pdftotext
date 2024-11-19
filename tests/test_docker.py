@@ -10,19 +10,13 @@ import requests
 PORT = 33031
 
 
-def submit_pdf(
-    service: str, pdf: str, mode: str | None = None, submit_stream: bool = False, post_timeout: int = 10
-) -> None | str:
+def submit_pdf(service: str, pdf: str, mode: str | None = None, post_timeout: int = 10) -> None | str:
     """Submit a pdf to the pdftotext service."""
     url = service + "/"
     with open(pdf, "rb") as data_fd:
         if mode is not None:
             url += f"?mode={mode}"
-        if submit_stream:
-            data = data_fd.read()
-            post_args = {"url": url, "data": data}
-        else:
-            post_args = {"url": url, "files": {"file": data_fd}}
+        post_args = {"url": url, "files": {"file": data_fd}}
 
         while True:
             try:
@@ -101,12 +95,6 @@ def test_pdftotext_simple_test(docker_container):
     assert ret == "hello world\n\n\x0c"
 
 
-def test_pdftotext_stream(docker_container):
-    """Stream test for pdftotext mode."""
-    ret = submit_pdf(docker_container, "tests/hello-world.pdf", submit_stream=True)
-    assert ret == "hello world\n\n\x0c"
-
-
 def test_pdftotext_pdf_with_accents(docker_container):
     """Accent test for pdftotext mode."""
     ret = submit_pdf(docker_container, "tests/accents.pdf")
@@ -116,12 +104,6 @@ def test_pdftotext_pdf_with_accents(docker_container):
 def test_pdf2txt_simple_test(docker_container):
     """Simple test for pdf2txt mode."""
     ret = submit_pdf(docker_container, "tests/hello-world.pdf", mode="pdf2txt")
-    assert ret == "hello world\n\n\x0c"
-
-
-def test_pdf2txt_stream(docker_container):
-    """Stream test for pdf2txt mode."""
-    ret = submit_pdf(docker_container, "tests/hello-world.pdf", submit_stream=True, mode="pdf2txt")
     assert ret == "hello world\n\n\x0c"
 
 
