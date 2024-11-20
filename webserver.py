@@ -40,26 +40,25 @@ for k, v in PARAM2PROGRAM_DEFAULTS.items():
         PARAM2PROGRAM_FOUND[k] = v
 
 
-def check_input_file(uri: str) -> tuple[bool, str]:
+def check_input_file(uri: str) -> None:
     """Check if input file satisfies acceptability conditions."""
     # check for .pdf extension
     uri_lower = uri.lower()
     if not uri_lower.endswith(".pdf"):
-        return False, "Input file is not a PDF file"
+        raise HTTPException(status_code=400, detail="Input file is not a PDF file")
     if uri_lower.startswith("gs://"):
         if ACCEPTED_BUCKETS is not None:
             # get bucket from uri
             bucket_name = uri_lower.split("/")[2]
             if bucket_name not in ACCEPTED_BUCKETS:
-                return False, "Input bucket not found in ACCEPTED_BUCKETS"
-    return True, ""
+                raise HTTPException(status_code=400, detail="Input bucket not found in ACCEPTED_BUCKETS")
 
 
 def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
     """Convert the given PDF files to text."""
     file_path_out = file_path_in + ".txt"
     if mode not in PARAM2PROGRAM_FOUND.keys():
-        return f"Program for mode {mode} not found", 400
+        raise HTTPException(status_code=400, detail=f"Invalid mode: {mode}")
     cmd = [PARAM2PROGRAM_FOUND[mode]]
 
     logging.debug("mode=%s file_path_in=%s file_path_out=%s params=%s", mode, file_path_in, file_path_out, params)
@@ -70,7 +69,7 @@ def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
     elif mode == "pdftotext":
         cmd.extend([file_path_in, file_path_out])
     else:
-        return f"Invalid mode: {mode}", 400
+        raise HTTPException(status_code=400, detail=f"Invalid mode: {mode}")
 
     logging.debug(f"Running {cmd}")
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
@@ -83,7 +82,7 @@ def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
         return FileResponse(file_path_out, background=BackgroundTask(shutil.rmtree, temp_dir))
     else:
         shutil.rmtree(temp_dir)
-        return f"Failed to execute '{mode}' process:\n\n" + err.decode("utf-8"), 500
+        raise HTTPException(status_code=500, detail=f"Failed to execute '{mode}' process:\n\n" + err.decode("utf-8"))
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -95,9 +94,7 @@ def healthcheck() -> str:
 @app.post("/from_bucket")
 def handle_file_from_bucket(uri: str, mode: str = "pdftotext", params: str = ""):
     """Entry point for API call to convert pdf via bucket url to text."""
-    is_ok, msg = check_input_file(uri)
-    if not is_ok:
-        return msg, 400
+    check_input_file(uri)
     temp_dir = tempfile.mkdtemp()
     try:
         client = storage.Client()
@@ -112,9 +109,7 @@ def handle_file_from_bucket(uri: str, mode: str = "pdftotext", params: str = "")
 @app.post("/")
 def handle_file(file: UploadFile = File(...), mode: str = "pdftotext", params: str = ""):
     """Entry point for API call to convert pdf to text."""
-    is_ok, msg = check_input_file(file.filename)
-    if not is_ok:
-        return msg, 400
+    check_input_file(file.filename)
     temp_dir = tempfile.mkdtemp()
     file_path_in = os.path.join(temp_dir, file.filename)
     try:
