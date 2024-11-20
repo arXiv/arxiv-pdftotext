@@ -16,6 +16,8 @@ from google.cloud import storage
 from google.cloud.storage.blob import Blob
 from starlette.background import BackgroundTask
 
+CGROUPNAME = "pdftotext"
+
 PARAM2PROGRAM_DEFAULTS = {
     "pdftotext": "pdftotext",
     "pdf2txt": "pdf2txt.py",
@@ -59,7 +61,7 @@ def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
     file_path_out = file_path_in + ".txt"
     if mode not in PARAM2PROGRAM_FOUND.keys():
         raise HTTPException(status_code=400, detail=f"Invalid mode: {mode}")
-    cmd = [PARAM2PROGRAM_FOUND[mode]]
+    cmd = ["cgexec", "-g", f"memory:{CGROUPNAME}", PARAM2PROGRAM_FOUND[mode]]
 
     logging.debug("mode=%s file_path_in=%s file_path_out=%s params=%s", mode, file_path_in, file_path_out, params)
     if params:
