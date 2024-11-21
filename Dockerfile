@@ -15,15 +15,17 @@ RUN adduser --system --uid $USER_ID appuser
 # Add poppler utils for pdftotext
 RUN apt-get update && apt install -y sudo cgroup-tools poppler-utils && rm -rf /var/lib/apt/lists/*
 
-# Copy the script and uv config
-COPY webserver.py /app/webserver.py
+# Copy uv related files for installation of venv
 COPY uv.lock /app/uv.lock
 COPY pyproject.toml /app/pyproject.toml
-COPY run-me.sh /app/run-me.sh
 
 # Install the project's dependencies using the lockfile and settings
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
+
+# copy remaining files
+COPY webserver.py /app/webserver.py
+COPY run-me.sh /app/run-me.sh
 
 # Switch to non-root user
 # this is done in run-me.sh
