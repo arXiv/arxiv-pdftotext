@@ -38,5 +38,7 @@ else
   echo $avail_mem > /sys/fs/cgroup/memory/${CGROUPNAME}/memory.limit_in_bytes
 fi
 
-sudo -u $APPUSER /app/.venv/bin/hypercorn --bind 0.0.0.0:8888 webserver:app
+# we need to preserve the environment, otherwise the various variables set
+# by docker -e are not visible to the webserver process!
+sudo --preserve-env -u $APPUSER /app/.venv/bin/hypercorn --error-logfile - --bind 0.0.0.0:8888 webserver:app
 
