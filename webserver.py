@@ -7,6 +7,7 @@ import shutil
 import socket
 import sys
 import tempfile
+from collections import namedtuple
 from subprocess import PIPE, Popen
 
 from dotenv import load_dotenv
@@ -16,30 +17,39 @@ from google.cloud import storage
 from google.cloud.storage.blob import Blob
 from starlette.background import BackgroundTask
 
-CGROUPNAME = "pdftotext"
+CGROUPNAME: str = "pdftotext"
 
-PARAM2PROGRAM_DEFAULTS = {
-    "pdftotext": "pdftotext",
-    "pdf2txt": "pdf2txt.py",
+ProgramEntry = namedtuple("ProgramEntry", ["priority", "progname"])
+PARAM2PROGRAM_DEFAULTS: dict[str, ProgramEntry] = {
+    "pdftotext": ProgramEntry(10, "pdftotext"),
+    "pdf2txt": ProgramEntry(20, "/app/.venv/bin/pdf2txt.py"),  # this one is not in PATH, set explicitly!
 }
-PARAM2PROGRAM_FOUND = {}
+PARAM2PROGRAM_FOUND: dict[str, ProgramEntry] = {}
+
 
 load_dotenv()
 # list of buckets like
 # ACCEPTED_BUCKETS=foo-bar-baz,another-bucket
 # would accept gs://foo-bar-baz/...
 # if NOT set, *ALL* buckets are allowed!
-ACCEPTED_BUCKETS_STRING = os.getenv("ACCEPTED_BUCKETS")
+ACCEPTED_BUCKETS_STRING: str | None = os.getenv("ACCEPTED_BUCKETS")
+ACCEPTED_BUCKETS: list[str] | None = None
 if ACCEPTED_BUCKETS_STRING is None:
     ACCEPTED_BUCKETS = None
 else:
     ACCEPTED_BUCKETS = [bucket.lower() for bucket in ACCEPTED_BUCKETS_STRING.split(",")]
 
-app = FastAPI()
-
 for k, v in PARAM2PROGRAM_DEFAULTS.items():
-    if shutil.which(v) is not None:
+    logging.debug(f"Testing for {v.progname}")
+    if shutil.which(v.progname) is not None:
+        logging.debug(f"{v.progname} found")
         PARAM2PROGRAM_FOUND[k] = v
+    else:
+        logging.warning(f"{v.progname} not found")
+
+logging.info("ACCEPTED_BUCKETS: %s", ACCEPTED_BUCKETS)
+logging.info("PARAM2PROGRAM_FOUND: %s", PARAM2PROGRAM_FOUND)
+app = FastAPI()
 
 
 def check_input_file(uri: str) -> None:
@@ -59,32 +69,48 @@ def check_input_file(uri: str) -> None:
 def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
     """Convert the given PDF files to text."""
     file_path_out = file_path_in + ".txt"
-    if mode not in PARAM2PROGRAM_FOUND.keys():
-        raise HTTPException(status_code=400, detail=f"Invalid mode: {mode}")
-    cmd = ["cgexec", "-g", f"memory:{CGROUPNAME}", PARAM2PROGRAM_FOUND[mode]]
-
-    logging.debug("mode=%s file_path_in=%s file_path_out=%s params=%s", mode, file_path_in, file_path_out, params)
-    if params:
-        cmd.extend(params.split())
-    if mode == "pdf2txt":
-        cmd.extend(["--outfile", file_path_out, file_path_in])
-    elif mode == "pdftotext":
-        cmd.extend([file_path_in, file_path_out])
-    else:
+    logging.debug(f"Entering convert_file: PARAM2PROGRAM_FOUND.keys: {PARAM2PROGRAM_FOUND.keys()}")
+    if mode not in PARAM2PROGRAM_FOUND.keys() and mode != "auto":
         raise HTTPException(status_code=400, detail=f"Invalid mode: {mode}")
 
-    logging.debug(f"Running {cmd}")
-    p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    logging.debug("Starting conversion process")
-    out, err = p.communicate()
-    logging.debug(f"stdout={out}, stderr={err}")
-    logging.debug("Conversion process finished")
+    modes_to_be_tried = []
+    if mode == "auto":
+        # add the keys sorted according to their priority
+        modes_to_be_tried.extend([k for k, v in sorted(PARAM2PROGRAM_FOUND.items(), key=lambda k_v: k_v[1].priority)])
+    elif mode in PARAM2PROGRAM_FOUND.keys():
+        modes_to_be_tried.append(mode)
+    # no else needed, already checked above
 
-    if p.returncode == 0:
-        return FileResponse(file_path_out, background=BackgroundTask(shutil.rmtree, temp_dir))
-    else:
-        shutil.rmtree(temp_dir)
-        raise HTTPException(status_code=500, detail=f"Failed to execute '{mode}' process:\n\n" + err.decode("utf-8"))
+    logging.debug(f"mode={mode} prog_to_be_tried={modes_to_be_tried}")
+
+    for mode in modes_to_be_tried:
+        cmd = ["cgexec", "-g", f"memory:{CGROUPNAME}", PARAM2PROGRAM_FOUND[mode].progname]
+
+        logging.debug("mode=%s file_path_in=%s file_path_out=%s params=%s", mode, file_path_in, file_path_out, params)
+        if params:
+            cmd.extend(params.split())
+        if mode == "pdf2txt":
+            cmd.extend(["--outfile", file_path_out, file_path_in])
+        elif mode == "pdftotext":
+            cmd.extend([file_path_in, file_path_out])
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid mode: {mode}")
+
+        logging.debug(f"Running {cmd}")
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        logging.debug("Starting conversion process")
+        out, err = p.communicate()
+        logging.debug(f"stdout={out}, stderr={err}")
+        logging.debug("Conversion process finished")
+
+        if p.returncode == 0:
+            return FileResponse(file_path_out, background=BackgroundTask(shutil.rmtree, temp_dir))
+        else:
+            logging.warning("Conversion with mode {mode} failed: {err.decode('utf-8')}")
+
+    # if we are still here, all modes have failed
+    shutil.rmtree(temp_dir)
+    raise HTTPException(status_code=500, detail=f"Failed to convert {file_path_in}")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -94,7 +120,7 @@ def healthcheck() -> str:
 
 
 @app.post("/from_bucket")
-def handle_file_from_bucket(uri: str, mode: str = "pdftotext", params: str = ""):
+def handle_file_from_bucket(uri: str, mode: str = "auto", params: str = ""):
     """Entry point for API call to convert pdf via bucket url to text."""
     check_input_file(uri)
     temp_dir = tempfile.mkdtemp()
@@ -109,7 +135,7 @@ def handle_file_from_bucket(uri: str, mode: str = "pdftotext", params: str = "")
 
 
 @app.post("/")
-def handle_file(file: UploadFile = File(...), mode: str = "pdftotext", params: str = ""):
+def handle_file(file: UploadFile = File(...), mode: str = "auto", params: str = ""):
     """Entry point for API call to convert pdf to text."""
     check_input_file(file.filename)
     temp_dir = tempfile.mkdtemp()
