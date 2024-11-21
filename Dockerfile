@@ -10,7 +10,7 @@ ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
 # Create a non-root user without a group
-RUN adduser -S -u $USER_ID appuser
+RUN adduser --system --uid $USER_ID appuser
 
 # Add poppler utils for pdftotext
 RUN apt-get update && apt install -y sudo cgroup-tools poppler-utils && rm -rf /var/lib/apt/lists/*
