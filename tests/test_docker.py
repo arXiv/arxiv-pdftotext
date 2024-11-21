@@ -67,20 +67,22 @@ def docker_container(request):
     args = ["docker", "build", "--build-arg", f"USER_ID={os.getuid()}", "-t", image_name, "."]
     make = subprocess.run(args, encoding="utf-8", capture_output=True, check=False)
     if make.returncode != 0:
-        print(make.stdout)
-        print(make.stderr)
+        logging.error(make.stdout)
+        logging.error(make.stderr)
+        raise Exception("Docker build failed")
 
     home = Path.home()
     # Start the container
     # fmt: off
     args = [
         "docker", "run", "--security-opt", "no-new-privileges=true", "--cpus", "1", "--rm",
+            "--privileged",  "--cgroupns=host",
             "-v", f"{home}/.config/gcloud/application_default_credentials.json:/tmp/credentials.json",
             "-e", "GOOGLE_APPLICATION_CREDENTIALS=/tmp/credentials.json",
             "-e", "GOOGLE_CLOUD_PROJECT=arxiv-development",
             "-e", "ACCEPTED_BUCKETS=arxiv-dev-submission",
             "-d", "-p", f"{PORT}:{dockerport}", "-e", f"PORT={dockerport}",
-        "--name", container_name, image_name
+            "--name", container_name, image_name
     ]
     docker = subprocess.run(args, encoding="utf-8", capture_output=True, check=False)
     if docker.returncode != 0:
