@@ -67,6 +67,24 @@ Passing a different mode:
 curl -F "file=@hello-world.pdf;" http://localhost:8888/?mode=pdf2txt
 ```
 
+Note that files not ending in `.pdf` will be rejected.
+
+### Converting PDFs located in GCS buckets
+
+It is possible to convert PDF files in GCS buckets via the endpoint
+`/from_bucket`. By default, all buckets are accepted.
+If the program is started with the environment variable `ACCEPTED_BUCKETS`
+begin set to a comma-separated list of acceptable buckets,
+only `gs://` URIs with one of these buckets will be accepted.
+
+Note that one can set `ACCEPTED_BUCKETS` also via `.env` files.
+
+Example conversion:
+
+```bash
+curl -X POST 'http://localhost:8888/from_bucket?uri=gs://some-bucket/some-file.pdf'
+```
+
 ## Development
 
 We provide a pre-commit configuration file. We strongly recommend activating
