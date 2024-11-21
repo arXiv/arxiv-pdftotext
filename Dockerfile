@@ -1,4 +1,5 @@
 FROM ghcr.io/astral-sh/uv:python3.12-alpine
+ARG USER_ID=1000
 
 WORKDIR /app
 
@@ -9,7 +10,7 @@ ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
 # Create a non-root user without a group
-RUN adduser -S appuser
+RUN adduser -S -u $USER_ID appuser
 
 # Add poppler utils for pdftotext
 RUN apk add --no-cache poppler-utils
