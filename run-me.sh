@@ -14,6 +14,13 @@ CGROUPNAME=pdftotext
 total_mem_in_kb=$(cat /proc/meminfo | grep MemFree | awk '{ print $2 }')
 total_mem=$(( total_mem_in_kb * 1024 ))
 avail_mem=$(( total_mem * 8 / 10))
+# allow setting max allowed memory via env var MAX_ALLOWED_MEMORY
+allowed_mem=${MAX_ALLOWED_MEMORY:-$avail_mem}
+# check that allowed mem is actually an unsigned integer
+if [[ "$allowed_mem" != +([0-9]) ]] ; then
+  echo "Not supported memory setting: $allowed_mem" >&2
+  exit 1
+fi
 
 # create cgroup that $APPUSER can use
 cgcreate -t $APPUSER:nogroup -a $APPUSER:nogroup -g memory:$CGROUPNAME
@@ -31,11 +38,11 @@ if [ -r /sys/fs/cgroup/cgroup.controllers ] ; then
   # - https://unix.stackexchange.com/questions/725112/using-cgroups-v2-without-root
   echo "Detected cgroups v2" >&2
   chmod go+w /sys/fs/cgroup/cgroup.procs
-  echo $avail_mem > /sys/fs/cgroup/${CGROUPNAME}/memory.max
+  echo "$allowed_mem" > /sys/fs/cgroup/${CGROUPNAME}/memory.max
 else
   # cgroups v1
   echo "Detected cgroups v1" >&2
-  echo $avail_mem > /sys/fs/cgroup/memory/${CGROUPNAME}/memory.limit_in_bytes
+  echo "$allowed_mem" > /sys/fs/cgroup/memory/${CGROUPNAME}/memory.limit_in_bytes
 fi
 
 # we need to preserve the environment, otherwise the various variables set

@@ -4,6 +4,7 @@
 import logging
 import os
 import shutil
+import signal
 import socket
 import sys
 import tempfile
@@ -105,12 +106,14 @@ def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
 
         if p.returncode == 0:
             return FileResponse(file_path_out, background=BackgroundTask(shutil.rmtree, temp_dir))
+        elif p.returncode < 0:
+            logging.warning(f"Conversion with mode {mode} was killed with {signal.Signals(-p.returncode).name}.")
         else:
-            logging.warning("Conversion with mode {mode} failed: {err.decode('utf-8')}")
+            logging.warning(f"Conversion with mode {mode} failed, exitcode: {p.returncode}: {err.decode('utf-8')}")
 
     # if we are still here, all modes have failed
     shutil.rmtree(temp_dir)
-    raise HTTPException(status_code=500, detail=f"Failed to convert {file_path_in}")
+    raise HTTPException(status_code=500, detail=f"Failed to convert {os.path.basename(file_path_in)}")
 
 
 @app.get("/", response_class=HTMLResponse)
