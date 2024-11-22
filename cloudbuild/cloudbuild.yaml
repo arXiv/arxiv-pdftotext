@@ -26,6 +26,9 @@ steps:
     - 'us-central1'
     - '--platform'
     - 'managed'
+    - '--env-vars-file'
+    - '${_ROOTDIR}/cloudbuild/env.${PROJECT_ID}.yaml',
+    - '--use-http2'
     - '--port'
     - '8888'
 
