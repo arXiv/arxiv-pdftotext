@@ -1,9 +1,12 @@
 """Test module for arxiv-pdftotext."""
 
+import os
 import subprocess
 
 import pytest
 from common import PORT, run_docker, submit_pdf
+
+IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 
 
 @pytest.fixture(scope="module")
@@ -47,6 +50,7 @@ def test_pdf2txt_pdf_with_accents(fx_build_docker, fx_run_docker):
     assert ret == "éàôèù\n\n\x0c"
 
 
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 def test_paper_from_bucket(fx_build_docker, fx_run_docker):
     """Test whether conversion from bucket returns something reasonable."""
     ret, _ = submit_pdf(

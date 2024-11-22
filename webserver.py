@@ -14,8 +14,8 @@ from subprocess import PIPE, Popen
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
-from google.cloud import storage
-from google.cloud.storage.blob import Blob
+from google.cloud import storage  # type: ignore
+from google.cloud.storage.blob import Blob  # type: ignore
 from starlette.background import BackgroundTask
 
 CGROUPNAME: str = "pdftotext"
@@ -67,14 +67,14 @@ def check_input_file(uri: str) -> None:
                 raise HTTPException(status_code=400, detail="Input bucket not found in ACCEPTED_BUCKETS")
 
 
-def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
+def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str) -> FileResponse:
     """Convert the given PDF files to text."""
-    file_path_out = file_path_in + ".txt"
+    file_path_out: str = file_path_in + ".txt"
     logging.debug(f"Entering convert_file: PARAM2PROGRAM_FOUND.keys: {PARAM2PROGRAM_FOUND.keys()}")
     if mode not in PARAM2PROGRAM_FOUND.keys() and mode != "auto":
         raise HTTPException(status_code=400, detail=f"Invalid mode: {mode}")
 
-    modes_to_be_tried = []
+    modes_to_be_tried: list[str] = []
     if mode == "auto":
         # add the keys sorted according to their priority
         modes_to_be_tried.extend([k for k, v in sorted(PARAM2PROGRAM_FOUND.items(), key=lambda k_v: k_v[1].priority)])
@@ -85,7 +85,7 @@ def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
     logging.debug(f"mode={mode} prog_to_be_tried={modes_to_be_tried}")
 
     for mode in modes_to_be_tried:
-        cmd = ["cgexec", "-g", f"memory:{CGROUPNAME}", PARAM2PROGRAM_FOUND[mode].progname]
+        cmd: list[str] = ["cgexec", "-g", f"memory:{CGROUPNAME}", PARAM2PROGRAM_FOUND[mode].progname]
 
         logging.debug("mode=%s file_path_in=%s file_path_out=%s params=%s", mode, file_path_in, file_path_out, params)
         if params:
@@ -101,7 +101,7 @@ def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str):
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         logging.debug("Starting conversion process")
         out, err = p.communicate()
-        logging.debug(f"stdout={out}, stderr={err}")
+        logging.debug(f"stdout={out.decode('utf-8')}, stderr={err.decode('utf-8')}")
         logging.debug("Conversion process finished")
 
         if p.returncode == 0:
@@ -123,7 +123,7 @@ def healthcheck() -> str:
 
 
 @app.post("/from_bucket")
-def handle_file_from_bucket(uri: str, mode: str = "auto", params: str = ""):
+def handle_file_from_bucket(uri: str, mode: str = "auto", params: str = "") -> FileResponse:
     """Entry point for API call to convert pdf via bucket url to text."""
     check_input_file(uri)
     temp_dir = tempfile.mkdtemp()
@@ -133,13 +133,15 @@ def handle_file_from_bucket(uri: str, mode: str = "auto", params: str = ""):
         file_path_in = os.path.join(temp_dir, os.path.basename(blob.name))
         blob.download_to_filename(file_path_in)
     except Exception as e:
-        return f"Failed to obtain file from bucket: {e}", 500
+        raise HTTPException(status_code=500, detail=f"Failed to obtain file from bucket: {e}")
     return convert_file(temp_dir, file_path_in, mode, params)
 
 
 @app.post("/")
-def handle_file(file: UploadFile = File(...), mode: str = "auto", params: str = ""):
+def handle_file(file: UploadFile = File(...), mode: str = "auto", params: str = "") -> FileResponse:
     """Entry point for API call to convert pdf to text."""
+    if file.filename is None:
+        raise HTTPException(status_code=400, detail="No filename provided.")
     check_input_file(file.filename)
     temp_dir = tempfile.mkdtemp()
     file_path_in = os.path.join(temp_dir, file.filename)

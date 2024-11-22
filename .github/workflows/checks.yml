@@ -1,0 +1,26 @@
+name: Test repo against ruff check and pytest
+
+on: [pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install python
+        run: uv python install
+
+      - name: Install the project
+        run: uv sync --dev
+
+      - name: Lint with Ruff
+        run: uvx ruff check .
+        continue-on-error: true
+
+      - name: Run tests
+        run: uv run pytest
+
