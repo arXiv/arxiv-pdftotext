@@ -19,6 +19,7 @@ jobs:
 
   ruff-check:
     needs: prepare-env
+    runs-on: ubuntu-latest
     steps:
       - name: Lint with Ruff
         run: uvx ruff check .
@@ -26,6 +27,7 @@ jobs:
 
   pytest-check:
     needs: prepare-env
+    runs-on: ubuntu-latest
     steps:
       - name: Run tests
         run: uv run pytest
