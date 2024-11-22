@@ -3,7 +3,7 @@ name: Test repo against ruff check and pytest
 on: [push]
 
 jobs:
-  prepare-env:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,18 +17,10 @@ jobs:
       - name: Install the project
         run: uv sync --dev
 
-  ruff-check:
-    needs: prepare-env
-    runs-on: ubuntu-latest
-    steps:
       - name: Lint with Ruff
         run: uvx ruff check .
         continue-on-error: true
 
-  pytest-check:
-    needs: prepare-env
-    runs-on: ubuntu-latest
-    steps:
       - name: Run tests
         run: uv run pytest
 
