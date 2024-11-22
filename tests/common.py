@@ -4,6 +4,7 @@ import logging
 import os
 import subprocess
 import time
+import typing
 from contextlib import nullcontext
 from pathlib import Path
 
@@ -21,6 +22,7 @@ def submit_pdf(
     with open(pdf, "rb") if not from_bucket else nullcontext() as data_fd:
         if mode is not None:
             url += f"?mode={mode}"
+        post_args: dict[str, typing.Any]
         if from_bucket:
             url += f"from_bucket?uri={pdf}"
             post_args = {"url": url}
