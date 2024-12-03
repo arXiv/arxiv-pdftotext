@@ -100,7 +100,11 @@ def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str) -> Fi
         logging.debug(f"Running {cmd}")
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         logging.debug("Starting conversion process")
-        out, err = p.communicate()
+        try:
+            out, err = p.communicate(timeout=180)  # TODO make configurable timeout, currently 3min
+        except TimeoutExpired:
+            p.kill()
+
         logging.debug(f"stdout={out.decode('utf-8')}, stderr={err.decode('utf-8')}")
         logging.debug("Conversion process finished")
 
