@@ -68,6 +68,14 @@ curl -F "file=@tests/hello-world.pdf;" http://localhost:8888/?mode=pdf2txt
 
 Note that files not ending in `.pdf` will be rejected.
 
+### Timeout of conversion
+
+Be default, if a conversion takes longer than 3min (180sec), the conversion
+process will be killed (and, depending on the mode, the next conversion method
+be tried, see avove).
+
+The timeout is configurable by passing `convert_timeout=NN` as API parameter.
+
 ### Converting PDFs located in GCS buckets
 
 It is possible to convert PDF files in GCS buckets via the endpoint

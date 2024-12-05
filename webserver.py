@@ -9,7 +9,7 @@ import socket
 import sys
 import tempfile
 from collections import namedtuple
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -67,7 +67,7 @@ def check_input_file(uri: str) -> None:
                 raise HTTPException(status_code=400, detail="Input bucket not found in ACCEPTED_BUCKETS")
 
 
-def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str) -> FileResponse:
+def convert_file(temp_dir: str, file_path_in: str, mode: str, convert_timeout: int, params: str) -> FileResponse:
     """Convert the given PDF files to text."""
     file_path_out: str = file_path_in + ".txt"
     logging.debug(f"Entering convert_file: PARAM2PROGRAM_FOUND.keys: {PARAM2PROGRAM_FOUND.keys()}")
@@ -101,8 +101,9 @@ def convert_file(temp_dir: str, file_path_in: str, mode: str, params: str) -> Fi
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         logging.debug("Starting conversion process")
         try:
-            out, err = p.communicate(timeout=180)  # TODO make configurable timeout, currently 3min
+            out, err = p.communicate(timeout=convert_timeout)
         except TimeoutExpired:
+            logging.warning(f"Conversion with mode {mode} timed out after {convert_timeout}secs")
             p.kill()
 
         logging.debug(f"stdout={out.decode('utf-8')}, stderr={err.decode('utf-8')}")
@@ -127,7 +128,7 @@ def healthcheck() -> str:
 
 
 @app.post("/from_bucket")
-def handle_file_from_bucket(uri: str, mode: str = "auto", params: str = "") -> FileResponse:
+def handle_file_from_bucket(uri: str, mode: str = "auto", convert_timeout: int = 180, params: str = "") -> FileResponse:
     """Entry point for API call to convert pdf via bucket url to text."""
     check_input_file(uri)
     temp_dir = tempfile.mkdtemp()
@@ -138,11 +139,13 @@ def handle_file_from_bucket(uri: str, mode: str = "auto", params: str = "") -> F
         blob.download_to_filename(file_path_in)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to obtain file from bucket: {e}")
-    return convert_file(temp_dir, file_path_in, mode, params)
+    return convert_file(temp_dir, file_path_in, mode, convert_timeout, params)
 
 
 @app.post("/")
-def handle_file(file: UploadFile = File(...), mode: str = "auto", params: str = "") -> FileResponse:
+def handle_file(
+    file: UploadFile = File(...), mode: str = "auto", convert_timeout: int = 180, params: str = ""
+) -> FileResponse:
     """Entry point for API call to convert pdf to text."""
     if file.filename is None:
         raise HTTPException(status_code=400, detail="No filename provided.")
@@ -157,7 +160,7 @@ def handle_file(file: UploadFile = File(...), mode: str = "auto", params: str = 
     finally:
         file.file.close()
 
-    return convert_file(temp_dir, file_path_in, mode, params)
+    return convert_file(temp_dir, file_path_in, mode, convert_timeout, params)
 
 
 if __name__ == "__main__":
