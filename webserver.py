@@ -105,6 +105,7 @@ def convert_file(temp_dir: str, file_path_in: str, mode: str, convert_timeout: i
         except TimeoutExpired:
             logging.warning(f"Conversion with mode {mode} timed out after {convert_timeout}secs")
             p.kill()
+            out, err = p.communicate()
 
         logging.debug(f"stdout={out.decode('utf-8')}, stderr={err.decode('utf-8')}")
         logging.debug("Conversion process finished")
