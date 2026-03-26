@@ -13,7 +13,7 @@ ENV UV_LINK_MODE=copy
 RUN adduser --system --uid $USER_ID appuser
 
 # Add poppler utils for pdftotext
-RUN apt-get update && apt install -y sudo cgroup-tools poppler-utils && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && apt install -y sudo cgroup-tools poppler-utils && rm -rf /var/lib/apt/lists/*
 
 # Copy uv related files for installation of venv
 COPY uv.lock /app/uv.lock
