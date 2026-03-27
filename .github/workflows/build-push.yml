@@ -1,0 +1,59 @@
+name: Build and push
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        description: Image name
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Commit SHA to deploy (leave blank for latest)
+        required: false
+        type: string
+      image_name:
+        description: Image name
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+
+env:
+  GCP_PROJECT_ID: arxiv-development
+  COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ env.COMMIT_SHA }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}
+          service_account: ${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker gcr.io --quiet
+
+      - name: Build image, caching from latest
+        run: |
+          docker pull gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }} || true
+
+          DOCKER_BUILDKIT=1 docker build \
+          --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }} \
+          -t gcr.io/${PROJECT_ID}/${{ inputs.image_name }}:${{ env.COMMIT_SHA }} .
+
+      - name: Push image
+        run: docker push --all-tags gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}

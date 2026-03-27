@@ -1,0 +1,48 @@
+name: pdftotext triggers
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+    # tags:
+    # - "RELEASE-*"
+    paths:
+      - "webserver.py"
+      - "Dockerfile"
+      - "terraform/**"
+  pull_request:
+    branches:
+      - master
+      - develop
+    paths:
+      - "webserver.py"
+      - "Dockerfile"
+      - "terraform/**"
+        
+concurrency:
+  # cancel any existing unfinished jobs if this workflow is retriggered
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  call-lint-test:
+    name: Lint qa-pdftotext
+    uses: ./.github/workflows/lint-test.yml
+
+  call-build-push:
+    needs: call-lint-test
+    name: Build push qa-pdftotext
+    uses: ./.github/workflows/build-push.yml
+    with:
+      image_name: qa-pdftotext
+
+  call-deploy-dev:
+    needs: [ call-lint-test, call-build-push ]
+    # deploy latest commit to dev automatically if merged to master
+    if: github.ref == 'refs/heads/master'
+    name: Deploy qa-pdftotext
+    uses: ./.github/workflows/deploy.yml
+    with:
+      image_name: qa-pdftotext
+      env: dev

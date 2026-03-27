@@ -1,0 +1,38 @@
+name: Test repo against ruff check and pytest
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install python
+        run: uv python install
+
+      - name: Install the project
+        run: uv sync --dev
+
+      - name: Lint with Ruff
+        run: uvx ruff check --output-format=github .
+        continue-on-error: true
+
+      - name: Run tests
+        run: uv run pytest --cov-report=html --cov-fail-under=80 tests
+
+      - name: Upload coverage HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 30
