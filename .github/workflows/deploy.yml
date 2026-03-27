@@ -1,6 +1,6 @@
 name: Deploy
 
-run-name: "Deploy qa-pdftotext ${{ inputs.env }} ${{ env.COMMIT_SHA }}"
+run-name: "Deploy qa-pdftotext ${{ inputs.environment }}"
 
 on:
   workflow_call:
