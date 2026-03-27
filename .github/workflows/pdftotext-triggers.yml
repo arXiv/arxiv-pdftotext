@@ -42,4 +42,4 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       image_name: qa-pdftotext
-      env: dev
+      environment: dev

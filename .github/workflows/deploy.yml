@@ -9,7 +9,7 @@ on:
         description: Image name
         required: false
         type: string
-      env:
+      environment:
         description: Environment (dev or prod)
         required: true
         type: string
@@ -23,7 +23,7 @@ on:
         description: Image name
         required: false
         type: string
-      env:
+      environment:
         description: Environment (dev or prod)
         required: true
         type: string
@@ -63,15 +63,17 @@ jobs:
 
       - name: Set environment
         run: |
-          if [[ "${{ inputs.env }}" == "prod" ]]; then
+          if [[ "${{ inputs.environment }}" == "prod" ]]; then
             echo "PROVIDER_NAME=${{ vars.ARXIV_PRODUCTION_PROVIDER_NAME }}" >> $GITHUB_ENV
             echo "SERVICE_ACCOUNT=${{ vars.ARXIV_PRODUCTION_SERVICE_ACCOUNT }}" >> $GITHUB_ENV
             echo "ENV_VAR=prod" >> $GITHUB_ENV
-          else
+          if [[ "${{ inputs.environment }}" == "dev" ]]; then
             # Default to Development
             echo "PROVIDER_NAME=${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}" >> $GITHUB_ENV
             echo "SERVICE_ACCOUNT=${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}" >> $GITHUB_ENV
             echo "ENV_VAR=dev" >> $GITHUB_ENV
+          else
+            echo "Invalid environment!"
           fi
 
       - name: Authenticate to Google Cloud
