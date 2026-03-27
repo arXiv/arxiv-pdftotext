@@ -1,4 +1,4 @@
-name: Test repo against ruff check and pytest
+name: Lint and test qa-pdftotext
 
 on:
   workflow_call:
