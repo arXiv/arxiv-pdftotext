@@ -13,7 +13,6 @@ on:
         description: Environment (dev or prod)
         required: true
         type: string
-        default: ""
   workflow_dispatch:
     inputs:
       commit_sha:
@@ -28,7 +27,6 @@ on:
         description: Environment (dev or prod)
         required: true
         type: string
-        default: ""
 
 permissions:
   contents: read

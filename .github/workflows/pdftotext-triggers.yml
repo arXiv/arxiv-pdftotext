@@ -5,8 +5,6 @@ on:
     branches:
       - master
       - develop
-    # tags:
-    # - "RELEASE-*"
     paths:
       - "webserver.py"
       - "Dockerfile"
@@ -21,7 +19,6 @@ on:
       - "terraform/**"
         
 concurrency:
-  # cancel any existing unfinished jobs if this workflow is retriggered
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
