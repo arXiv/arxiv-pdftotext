@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - develop
+      - add-terraform
     paths:
       - "webserver.py"
       - "Dockerfile"
@@ -37,7 +38,7 @@ jobs:
   call-deploy-dev:
     needs: [ call-lint-test, call-build-push ]
     # deploy latest commit to dev automatically if merged to master
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
     name: Deploy qa-pdftotext
     uses: ./.github/workflows/deploy.yml
     with:
