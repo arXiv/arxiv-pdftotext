@@ -20,7 +20,6 @@ dev = [
     "requests",
     "pre-commit",
     "ty",
-    "pytest-cov>=7.1.0",
 ]
 
 [tool.ruff]

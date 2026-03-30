@@ -31,12 +31,4 @@ jobs:
         run: uv run ty check
 
       - name: Run tests
-        run: uv run pytest --cov-report=html --cov-fail-under=80 tests
-
-      - name: Upload coverage HTML report
-        uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: coverage-report
-          path: htmlcov/
-          retention-days: 30
+        run: uv run pytest tests

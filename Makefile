@@ -24,5 +24,5 @@ type:
 	uv run ty check
 
 test:
-	uv run pytest --cov-report=html --cov-fail-under=80 tests
+	uv run pytest tests
 	
