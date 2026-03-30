@@ -7,7 +7,7 @@ on:
     inputs:
       image_name:
         description: Image name
-        required: false
+        required: true
         type: string
       environment:
         description: Environment (dev or prod)
@@ -21,7 +21,7 @@ on:
         type: string
       image_name:
         description: Image name
-        required: false
+        required: true
         type: string
       environment:
         description: Environment (dev or prod)
