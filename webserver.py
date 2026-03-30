@@ -14,8 +14,8 @@ from subprocess import PIPE, Popen, TimeoutExpired
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
-from google.cloud import storage  # type: ignore
-from google.cloud.storage.blob import Blob  # type: ignore
+from google.cloud import storage
+from google.cloud.storage.blob import Blob
 from starlette.background import BackgroundTask
 
 CGROUPNAME: str = "pdftotext"

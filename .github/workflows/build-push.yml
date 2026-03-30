@@ -5,7 +5,7 @@ on:
     inputs:
       image_name:
         description: Image name
-        required: false
+        required: true
         type: string
   workflow_dispatch:
     inputs:
@@ -15,7 +15,7 @@ on:
         type: string
       image_name:
         description: Image name
-        required: false
+        required: true
         type: string
 
 permissions:
@@ -53,7 +53,7 @@ jobs:
 
           DOCKER_BUILDKIT=1 docker build \
           --cache-from gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }} \
-          -t gcr.io/${PROJECT_ID}/${{ inputs.image_name }}:${{ env.COMMIT_SHA }} .
+          -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}:${{ env.COMMIT_SHA }} .
 
       - name: Push image
         run: docker push --all-tags gcr.io/${{ env.GCP_PROJECT_ID }}/${{ inputs.image_name }}

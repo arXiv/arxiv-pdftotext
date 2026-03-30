@@ -19,8 +19,7 @@ dev = [
     "pytest",
     "requests",
     "pre-commit",
-    "mypy",
-    "types-requests",
+    "ty",
 ]
 
 [tool.ruff]
@@ -53,7 +52,3 @@ lint.ignore = [
 
 [tool.ruff.format]
 quote-style = "double"
-
-[tool.mypy]
-python_version = 3.12
-
