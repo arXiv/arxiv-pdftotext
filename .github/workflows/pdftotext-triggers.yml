@@ -9,6 +9,7 @@ on:
       - "webserver.py"
       - "Dockerfile"
       - "terraform/**"
+      - "run-me.sh"
   pull_request:
     branches:
       - master
@@ -17,6 +18,7 @@ on:
       - "webserver.py"
       - "Dockerfile"
       - "terraform/**"
+      - "run-me.sh"
         
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
