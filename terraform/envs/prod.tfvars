@@ -1,0 +1,5 @@
+gcp_project_id   = "arxiv-production"
+gcp_region       = "us-central1"
+env              = "PROD"
+accepted_buckets = "arxiv-submission"
+slack_channel_id = "4172442693093194321"
