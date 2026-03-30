@@ -25,8 +25,10 @@ jobs:
         run: uv sync --dev
 
       - name: Lint with Ruff
-        run: uvx ruff check --output-format=github .
-        continue-on-error: true
+        run: uv run ruff check --output-format=github .
+
+      - name: Type with ty
+        run: uv run ty check
 
       - name: Run tests
         run: uv run pytest --cov-report=html --cov-fail-under=80 tests
