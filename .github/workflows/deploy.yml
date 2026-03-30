@@ -67,7 +67,7 @@ jobs:
             echo "PROVIDER_NAME=${{ vars.ARXIV_PRODUCTION_PROVIDER_NAME }}" >> $GITHUB_ENV
             echo "SERVICE_ACCOUNT=${{ vars.ARXIV_PRODUCTION_SERVICE_ACCOUNT }}" >> $GITHUB_ENV
             echo "ENV_VAR=prod" >> $GITHUB_ENV
-          if [[ "${{ inputs.environment }}" == "dev" ]]; then
+          elif [[ "${{ inputs.environment }}" == "dev" ]]; then
             # Default to Development
             echo "PROVIDER_NAME=${{ vars.ARXIV_DEVELOPMENT_PROVIDER_NAME }}" >> $GITHUB_ENV
             echo "SERVICE_ACCOUNT=${{ vars.ARXIV_DEVELOPMENT_SERVICE_ACCOUNT }}" >> $GITHUB_ENV
