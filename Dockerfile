@@ -25,6 +25,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # copy remaining files
 COPY webserver.py /app/webserver.py
+COPY config.py /app/config.py
 COPY run-me.sh /app/run-me.sh
 
 # Switch to non-root user

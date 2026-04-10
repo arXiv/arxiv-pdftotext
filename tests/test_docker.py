@@ -28,25 +28,25 @@ def fx_run_docker(request):
 
 def test_pdftotext_simple_test(fx_build_docker, fx_run_docker):
     """Simple test for pdftotext mode."""
-    ret, _ = submit_pdf(fx_run_docker, "tests/hello-world.pdf")
+    ret, _ = submit_pdf(fx_run_docker, "tests/data/hello-world.pdf")
     assert ret == "hello world\n\n\x0c"
 
 
 def test_pdftotext_pdf_with_accents(fx_build_docker, fx_run_docker):
     """Accent test for pdftotext mode."""
-    ret, _ = submit_pdf(fx_run_docker, "tests/accents.pdf")
+    ret, _ = submit_pdf(fx_run_docker, "tests/data/accents.pdf")
     assert ret == "éàôèù\n\n\x0c"
 
 
 def test_pdf2txt_simple_test(fx_build_docker, fx_run_docker):
     """Simple test for pdf2txt mode."""
-    ret, _ = submit_pdf(fx_run_docker, "tests/hello-world.pdf", mode="pdf2txt")
+    ret, _ = submit_pdf(fx_run_docker, "tests/data/hello-world.pdf", mode="pdf2txt")
     assert ret == "hello world\n\n\x0c"
 
 
 def test_pdf2txt_pdf_with_accents(fx_build_docker, fx_run_docker):
     """Accent test for pdf2txt mode."""
-    ret, _ = submit_pdf(fx_run_docker, "tests/accents.pdf", mode="pdf2txt")
+    ret, _ = submit_pdf(fx_run_docker, "tests/data/accents.pdf", mode="pdf2txt")
     assert ret == "éàôèù\n\n\x0c"
 
 
@@ -66,14 +66,14 @@ def test_paper_from_bucket(fx_build_docker, fx_run_docker):
 
 def test_not_pdf_file(fx_build_docker, fx_run_docker):
     """Test whether non-pdf files are rejected."""
-    ret, det = submit_pdf(fx_run_docker, "tests/dummy-file.ps")
+    ret, det = submit_pdf(fx_run_docker, "tests/data/dummy-file.ps")
     assert ret is None
     assert det == 'status code: 400, details={"detail":"Input file is not a PDF file"}'
 
 
 def test_incorrect_mode(fx_build_docker, fx_run_docker):
     """Test whether unsupported modes are rejected."""
-    ret, det = submit_pdf(fx_run_docker, "tests/accents.pdf", mode="invalid_mode")
+    ret, det = submit_pdf(fx_run_docker, "tests/data/accents.pdf", mode="invalid_mode")
     assert ret is None
     assert det == 'status code: 400, details={"detail":"Invalid mode: invalid_mode"}'
 

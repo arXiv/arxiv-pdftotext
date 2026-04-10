@@ -58,12 +58,12 @@ Three modes are supported:
 Default mode is `auto`
 
 ```bash
-curl -F "file=@tests/hello-world.pdf;" http://localhost:8888/
+curl -F "file=@tests/data/hello-world.pdf;" http://localhost:8888/
 ```
 
 Passing a different mode:
 ```bash
-curl -F "file=@tests/hello-world.pdf;" http://localhost:8888/?mode=pdf2txt
+curl -F "file=@tests/data/hello-world.pdf;" http://localhost:8888/?mode=pdf2txt
 ```
 
 Note that files not ending in `.pdf` will be rejected.

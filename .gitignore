@@ -1,2 +1,9 @@
 .idea/
 __pycache__
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.venv
+.env
+arxiv-pdftotext-lowmem.log
+arxiv-pdftotext.log

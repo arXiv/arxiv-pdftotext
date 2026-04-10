@@ -9,7 +9,7 @@ dependencies = [
     "google-cloud-storage",
     "hypercorn",
     "pdfminer-six",
-    "python-dotenv",
+    "pydantic-settings>=2.13.1",
     "python-multipart",
 ]
 
@@ -20,35 +20,25 @@ dev = [
     "requests",
     "pre-commit",
     "ty",
+    "httpx>=0.28.1",
 ]
 
 [tool.ruff]
 line-length = 120
 
-lint.select = [
+[tool.ruff.lint]
+select = [
     "F", # Pyflakes
-    "D", # pydocstyle
     "E", # pycodestyle errors
-    # "W", # pycodestyle warnings
-    # "C90", # McCabe
-    "I",   # isort
-    "UP",  # pyupgrade
     "PLC",
     "PLE",
     "PLW", # Pylint
-    # "PLR", # Pylint refactoring
-    "PD",  # pandas checks
-    "NPY", # numpy checks
     "RUF", # ruff internal check
 ]
-lint.ignore = [
-    "D105", # no docstring in magic method like __str__
-    "D107", # no docstring in __init__
-    "D203", # one-blank-line-before-class
-    "D211", # no-blank-line-before-class
-    "D213", # multi-line-summary-second-line
-]
-
 
 [tool.ruff.format]
 quote-style = "double"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
