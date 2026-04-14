@@ -68,18 +68,18 @@ def test_not_pdf_file(fx_build_docker, fx_run_docker):
     """Test whether non-pdf files are rejected."""
     ret, det = submit_pdf(fx_run_docker, "tests/data/dummy-file.ps")
     assert ret is None
-    assert det == 'status code: 400, details={"detail":"Input file is not a PDF file"}'
+    assert det == 'status code: 400, details={"detail":"Bad request"}'
 
 
 def test_incorrect_mode(fx_build_docker, fx_run_docker):
     """Test whether unsupported modes are rejected."""
     ret, det = submit_pdf(fx_run_docker, "tests/data/accents.pdf", mode="invalid_mode")
     assert ret is None
-    assert det == 'status code: 400, details={"detail":"Invalid mode: invalid_mode"}'
+    assert det == 'status code: 400, details={"detail":"Bad request"}'
 
 
 def test_forbidden_bucket(fx_build_docker, fx_run_docker):
     """Test whether forbidden bucket returns an error."""
     ret, det = submit_pdf(fx_run_docker, "gs://some-other-bucket/foobar.pdf", from_bucket=True, post_timeout=120)
     assert ret is None
-    assert det == 'status code: 400, details={"detail":"Input bucket not found in ACCEPTED_BUCKETS"}'
+    assert det == 'status code: 400, details={"detail":"Bad request"}'

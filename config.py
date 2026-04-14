@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -12,22 +13,30 @@ class BaseConfig(BaseSettings):
 
 class ProgramEntry(BaseModel):
     priority: int
-    progname: str
+    name: str
+    path: str
+    template: str
 
 
 class Config(BaseSettings):
     program_configs: dict[str, ProgramEntry] = Field(
         default={
-            "pdftotext": ProgramEntry(priority=10, progname="pdftotext"),
+            "pdftotext": ProgramEntry(
+                priority=10,
+                name="pdftotext",
+                path="pdftotext",
+                template="{path} {params} {file_in} {file_out}",
+            ),
             "pdf2txt": ProgramEntry(
-                priority=20, progname="/app/.venv/bin/pdf2txt.py"
-            ),  # this one is not in PATH, set explicitly!
+                priority=20,
+                name="pdf2txt",
+                path="/app/.venv/bin/pdf2txt.py",
+                template="{path} {params} --outfile {file_out} {file_in}",
+            ),
         }
     )
-
-    accepted_buckets: Optional[list[str]] = Field(
-        default=None, alias="ACCEPTED_BUCKETS"
-    )  # if None, all buckets are allowed!
+    cgroup_prefix: list[str] = ["cgexec", "-g", "memory:pdftotext"]
+    accepted_buckets: Optional[list[str]] = None # if None, all buckets are allowed!
 
     @field_validator("accepted_buckets", mode="before")
     @classmethod
@@ -36,11 +45,12 @@ class Config(BaseSettings):
             return [item.strip().lower() for item in v.split(",") if item.strip()]
         return v
 
-    cgroup_name: str = "pdftotext"
     host: str = "0.0.0.0"
     port: int = 8888
 
     default_convert_timeout: int = 180
 
 
-config = Config()
+@lru_cache
+def get_config():
+    return Config()
