@@ -7,3 +7,4 @@ __pycache__
 .env
 arxiv-pdftotext-lowmem.log
 arxiv-pdftotext.log
+.coverage

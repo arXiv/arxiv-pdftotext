@@ -21,6 +21,7 @@ dev = [
     "pre-commit",
     "ty",
     "httpx>=0.28.1",
+    "pytest-cov>=7.1.0",
 ]
 
 [tool.ruff]
@@ -42,3 +43,6 @@ quote-style = "double"
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = ["tests/*", "__init__.py"]
