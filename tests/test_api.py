@@ -2,6 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock, patch
 
+from google.cloud.storage import Blob
+
 from main import app
 from config import get_config, Config, ProgramEntry
 from exceptions import ExtractionFailure
@@ -14,6 +16,7 @@ client = TestClient(app)
 def fake_config():
     return Config(accepted_buckets=["valid-bucket"])
 
+
 @pytest.fixture
 def fake_engines():
     return [
@@ -25,6 +28,13 @@ def fake_engines():
         ),
         ProgramEntry(name="pdf2txt", path="", priority=20, template=""),
     ]
+
+
+@pytest.fixture
+def mock_blob():
+    mock_blob = MagicMock(spec=Blob)
+    mock_blob.name = "input.pdf"
+    return mock_blob
 
 
 @pytest.fixture(autouse=True)
@@ -74,11 +84,10 @@ class TestHandleFile:
 
 class TestHandleFileFromBucket:
     @patch("api.Blob.from_string")
-    def test_from_bucket_success(self, mock_blob_from_string, mock_convert_file):
-        mock_blob = MagicMock()
-        mock_blob.name = "input.pdf"
+    def test_from_bucket_success(
+        self, mock_blob_from_string, mock_blob, mock_convert_file
+    ):
         mock_blob_from_string.return_value = mock_blob
-
         params = {"uri": "gs://valid-bucket/input.pdf", "mode": "auto"}
         response = client.post("/from_bucket", params=params)
 
@@ -86,11 +95,10 @@ class TestHandleFileFromBucket:
         assert response.text == "extracted text"
 
     @patch("api.Blob.from_string")
-    def test_from_bucket_invalid_bucket(self, mock_blob_from_string, fake_config):
-        mock_blob = MagicMock()
-        mock_blob.name = "input.pdf"
+    def test_from_bucket_invalid_bucket(
+        self, mock_blob_from_string, mock_blob, fake_config
+    ):
         mock_blob_from_string.return_value = mock_blob
-
         params = {"uri": "gs://unauthorized-bucket/input.pdf"}
         response = client.post("/from_bucket", params=params)
 
@@ -98,11 +106,9 @@ class TestHandleFileFromBucket:
 
     @patch("api.Blob.from_string")
     def test_from_bucket_exception_cleanup(
-        self, mock_blob_from_string, mock_convert_file
-        ):
+        self, mock_blob_from_string, mock_blob, mock_convert_file
+    ):
         """verify that temp dir cleanup is triggered on failure"""
-        mock_blob = MagicMock()
-        mock_blob.name = "input.pdf"
         mock_blob_from_string.return_value = mock_blob
 
         with patch("api.convert_file", side_effect=ExtractionFailure):
@@ -112,5 +118,4 @@ class TestHandleFileFromBucket:
                 response = client.post("/from_bucket", params=params)
 
                 assert response.status_code == 422
-                
                 mock_rmtree.assert_called()
