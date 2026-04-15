@@ -66,7 +66,7 @@ def build_docker(image_name: str):
         image_name,
         ".",
     ]
-    make = subprocess.run(args, encoding="utf-8", capture_output=True, check=False)
+    subprocess.run(args, encoding="utf-8", capture_output=True, check=False)
 
 
 def run_docker(container_name: str, mem: int | None = None):
@@ -90,7 +90,7 @@ def run_docker(container_name: str, mem: int | None = None):
     if mem:
         args.extend(["-e", f"MAX_ALLOWED_MEMORY={mem}"])
     args.append(image_name)
-    docker = subprocess.run(args, encoding="utf-8", capture_output=True, check=False)
+    subprocess.run(args, encoding="utf-8", capture_output=True, check=False)
 
     # Wait for the API to be ready
     for _ in range(60):  # retries for 60 seconds
