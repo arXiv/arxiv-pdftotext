@@ -34,9 +34,7 @@ def submit_pdf(
             post_args = {"url": url, "files": {"file": data_fd}}
 
         while True:
-            res = requests.post(
-                **post_args, timeout=post_timeout, allow_redirects=False
-            )
+            res = requests.post(**post_args, timeout=post_timeout, allow_redirects=False)
             status_code = res.status_code
 
             if status_code == 200:

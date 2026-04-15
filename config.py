@@ -36,7 +36,7 @@ class Config(BaseSettings):
         }
     )
     cgroup_prefix: list[str] = ["cgexec", "-g", "memory:pdftotext"]
-    accepted_buckets: Optional[list[str]] = None # if None, all buckets are allowed!
+    accepted_buckets: Optional[list[str]] = None  # if None, all buckets are allowed!
 
     @field_validator("accepted_buckets", mode="before")
     @classmethod

@@ -42,7 +42,7 @@ def handle_file_from_bucket(
     params: str = "",
     config: Config = Depends(get_config),
     client: storage.Client = Depends(get_gcs_client),
-    engines: list[ProgramEntry] = Depends(get_engines)
+    engines: list[ProgramEntry] = Depends(get_engines),
 ) -> FileResponse:
     """Convert pdf to text via bucket url."""
     input_blob = Blob.from_string(uri, client=client)
@@ -59,9 +59,7 @@ def handle_file_from_bucket(
     try:
         input_blob.download_to_filename(file_path_in)
         file_path_out = convert_file(file_path_in, mode, convert_timeout, params, config, engines)
-        return FileResponse(
-            file_path_out, background=BackgroundTask(shutil.rmtree, temp_dir)
-        )
+        return FileResponse(file_path_out, background=BackgroundTask(shutil.rmtree, temp_dir))
     except Exception:
         shutil.rmtree(temp_dir)
         raise
@@ -74,7 +72,7 @@ def handle_file(
     convert_timeout: int = 180,
     params: str = "",
     config: Config = Depends(get_config),
-    engines: list[ProgramEntry] = Depends(get_engines)
+    engines: list[ProgramEntry] = Depends(get_engines),
 ) -> FileResponse:
     """Convert pdf to text via direct upload."""
     if file.filename is None or not input_file_has_pdf_extension(file.filename):
@@ -86,12 +84,8 @@ def handle_file(
     try:
         with open(file_path_in, "wb") as f:
             shutil.copyfileobj(file.file, f)
-        file_path_out = convert_file(
-            file_path_in, mode, convert_timeout, params, config, engines
-        )
-        return FileResponse(
-            file_path_out, background=BackgroundTask(shutil.rmtree, temp_dir)
-        )
+        file_path_out = convert_file(file_path_in, mode, convert_timeout, params, config, engines)
+        return FileResponse(file_path_out, background=BackgroundTask(shutil.rmtree, temp_dir))
     except Exception:
         shutil.rmtree(temp_dir)
         raise

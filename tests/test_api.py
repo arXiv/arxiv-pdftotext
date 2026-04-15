@@ -84,9 +84,7 @@ class TestHandleFile:
 
 class TestHandleFileFromBucket:
     @patch("api.Blob.from_string")
-    def test_from_bucket_success(
-        self, mock_blob_from_string, mock_blob, mock_convert_file
-    ):
+    def test_from_bucket_success(self, mock_blob_from_string, mock_blob, mock_convert_file):
         mock_blob_from_string.return_value = mock_blob
         params = {"uri": "gs://valid-bucket/input.pdf", "mode": "auto"}
         response = client.post("/from_bucket", params=params)
@@ -95,9 +93,7 @@ class TestHandleFileFromBucket:
         assert response.text == "extracted text"
 
     @patch("api.Blob.from_string")
-    def test_from_bucket_invalid_bucket(
-        self, mock_blob_from_string, mock_blob, fake_config
-    ):
+    def test_from_bucket_invalid_bucket(self, mock_blob_from_string, mock_blob, fake_config):
         mock_blob_from_string.return_value = mock_blob
         params = {"uri": "gs://unauthorized-bucket/input.pdf"}
         response = client.post("/from_bucket", params=params)
@@ -105,9 +101,7 @@ class TestHandleFileFromBucket:
         assert response.status_code == 400
 
     @patch("api.Blob.from_string")
-    def test_from_bucket_exception_cleanup(
-        self, mock_blob_from_string, mock_blob, mock_convert_file
-    ):
+    def test_from_bucket_exception_cleanup(self, mock_blob_from_string, mock_blob, mock_convert_file):
         """verify that temp dir cleanup is triggered on failure"""
         mock_blob_from_string.return_value = mock_blob
 

@@ -21,7 +21,7 @@ def get_programs(mode: str, engines: list[ProgramEntry]) -> list[ProgramEntry]:
         return engines
     else:
         program = next((e for e in engines if e.name == mode), None)
-        
+
         if program is None:
             raise BadRequest
         else:
@@ -35,19 +35,12 @@ def get_command_for_program(
     params: str,
     config: Config,
 ) -> list[str]:
-    from_template = program.template.format(
-        path=program.path, params=params, file_in=file_in, file_out=file_out
-    )
+    from_template = program.template.format(path=program.path, params=params, file_in=file_in, file_out=file_out)
     return config.cgroup_prefix + [part for part in from_template.split() if part]
 
 
 def convert_file(
-    file_path_in: str,
-    mode: str,
-    convert_timeout: int,
-    params: str,
-    config: Config,
-    engines: list[ProgramEntry]
+    file_path_in: str, mode: str, convert_timeout: int, params: str, config: Config, engines: list[ProgramEntry]
 ) -> str:
     file_path_out = f"{file_path_in}.txt"
     programs = get_programs(mode, engines)
