@@ -24,7 +24,11 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 # copy remaining files
-COPY webserver.py /app/webserver.py
+COPY main.py /app/main.py
+COPY config.py /app/config.py
+COPY api.py /app/api.py
+COPY services.py /app/services.py
+COPY exceptions.py /app/exceptions.py
 COPY run-me.sh /app/run-me.sh
 
 # Switch to non-root user

@@ -25,10 +25,17 @@ jobs:
         run: uv sync --dev
 
       - name: Lint with Ruff
-        run: uv run ruff check --output-format=github .
+        run: uv run ruff check --output-format=github
 
       - name: Type with ty
         run: uv run ty check
 
       - name: Run tests
-        run: uv run pytest tests
+        run: uv run pytest tests/ --cov=. --cov-report=html --cov-fail-under=80
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-qa-pdftotext
+          path: htmlcov/
