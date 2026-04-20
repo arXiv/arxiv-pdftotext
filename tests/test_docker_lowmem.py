@@ -25,6 +25,6 @@ def fx_run_docker_lowmem(request):
 
 def test_memory_limit_kill(fx_build_docker, fx_run_docker_lowmem):
     """Test that in low-memory situation conversions are killed."""
-    ret, det = submit_pdf(fx_run_docker_lowmem, "tests/hello-world.pdf")
+    ret, det = submit_pdf(fx_run_docker_lowmem, "tests/data/hello-world.pdf")
     assert ret is None
-    assert det == 'status code: 500, details={"detail":"Failed to convert hello-world.pdf"}'
+    assert det == 'status code: 422, details={"detail":"Extraction failed"}'

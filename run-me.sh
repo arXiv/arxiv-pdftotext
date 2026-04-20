@@ -6,7 +6,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # these need to be in sync with:
-# - webserver.py: variable CGROUPNAME
+# - config.py: cgroup_name
 # - Dockerfile: adduser call
 APPUSER=appuser
 CGROUPNAME=pdftotext
@@ -88,7 +88,7 @@ fi
 
 # we need to preserve the environment, otherwise the various variables set
 # by docker -e are not visible to the webserver process!
-sudo --preserve-env -u $APPUSER /app/.venv/bin/hypercorn --error-logfile - --bind 0.0.0.0:8888 webserver:app &
+sudo --preserve-env -u $APPUSER /app/.venv/bin/hypercorn --error-logfile - --bind 0.0.0.0:8888 main:app &
 PID=$!
 # wait for the process to terminate, or getting killed via signal
 wait

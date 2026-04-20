@@ -1,0 +1,41 @@
+name: Lint and test
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.0.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: pyproject.toml
+
+      - name: Install the project
+        run: uv sync --dev
+
+      - name: Lint with Ruff
+        run: uv run ruff check --output-format=github
+
+      - name: Type with ty
+        run: uv run ty check
+
+      - name: Run tests
+        run: uv run pytest tests/ --cov=. --cov-report=html --cov-fail-under=80
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-qa-pdftotext
+          path: htmlcov/

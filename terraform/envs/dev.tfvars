@@ -1,0 +1,5 @@
+gcp_project_id   = "arxiv-development"
+gcp_region       = "us-central1"
+env              = "DEV"
+accepted_buckets = "arxiv-dev-submission"
+slack_channel_id = "14064810228694129403"
